@@ -68,21 +68,13 @@ class TestQueueService(rpyc.Service):
     servers that are built to run within the same administrative domain.
     '''
 
-    def __init__(self):
-        '''
-        Constructor: create an empty queue and dictionary of TaskStatus objects, along with 
-        the information needed to find the service
-        
-        
-        '''
+    def on_connect(self):
         self.hostname = gethostname()
         self.socAddr = 19962
         self.queue = deque([])
         self.tStatus = {}
         print ('Test Queue Service has been started')
-    
-    def on_connect(self):
-        pass
+            
     
     def on_disconnect(self):
         pass
