@@ -1,7 +1,13 @@
 '''
 Created on May 12, 2013
 
-@author: waldo
+A prototype implementation of the v2 asynchronous task service. This prototype
+implements a simple Queue, a Task object, and a TaskStatus object, along with a
+proxy object that can be handed around to different processes (perhaps on different
+machines) that can be used to share the TaskStatus object.
+
+Communication in this prototype is via rpyc, which is a simple rpc system with a 
+service registry. 
 '''
 import rpyc
 import uuid
@@ -9,6 +15,10 @@ from collections import deque
 from socket import gethostname
 
 class XTask:
+    '''
+    A simple Task object, containing a uuid, a destination id, and some chunk
+    of data. This is more to test things than to do anything useful
+    '''
     def __init__(self, destId, data):
         self.id = uuid.uuid4()
         self.destId = destId
@@ -16,11 +26,18 @@ class XTask:
         
 
 class TQStatus(object):
+    '''
+    An enumeration of the states that a Task can be in, reflected in the
+    TaskStatus object (and obtainable by using the TSProxy). The states
+    should be taken as a set of flags that indicate the state as last updated;
+    there may be some lag between the time that a Task actually changes
+    state and the time at which the status is changed
+    '''
     queued = 0
     taken = 1
-    cancelled = False
-    complete = False
-    error = ''
+    cancelled = 2
+    complete = 3
+    error = 4
     
     
     
