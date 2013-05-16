@@ -20,11 +20,10 @@ class XTask:
     of data. This is more to test things than to do anything useful
     '''
     def __init__(self, destId, data):
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
         self.destId = destId
         self.data = data
         
-
 class TQStatus(object):
     '''
     An enumeration of the states that a Task can be in, reflected in the
@@ -38,9 +37,7 @@ class TQStatus(object):
     cancelled = 2
     complete = 3
     error = 4
-    
-    
-    
+       
 class TaskStatus(object):
     def __init__(self, taskId, retDest):
         self.id = taskId
@@ -69,8 +66,6 @@ class TSProxy(TaskStatus):
             self.connectToServer()
         self.__dict__[attrName] = self.service.setAttr(self.id, attrName, newVal)
         
-        
-    
 class TestQueueService(rpyc.Service):
     '''
     A prototype of the v2 edX asynchronous task queue service
@@ -96,23 +91,24 @@ class TestQueueService(rpyc.Service):
     def on_disconnect(self):
         pass
     
-    def exposed_put(self, task):
+    def exposed_put(self, taskId, taskdest, taskdata):
         '''
         Put a task on the queue, returning a TSProxy that allow the client to track task progress
         
         
         '''
-        retTS = TaskStatus(task.id, task.destId)
+        task = XTask(taskId, taskdest, taskdata)
+        retTS = TaskStatus(taskid, taskdest)
         self.queue.append(task)
         self.tStatus[task.id] = retTS
-        retProxy = TSProxy(task.id, task.destId, self.hostname, self.socAddr)
+        retProxy = (task.id, task.destId, self.hostname, self.socAddr)
         return retProxy
     
     def exposed_get(self):
         retTask = self.queue.popleft()
         self.tStatus[retTask.id].qStatus = TQStatus.taken
         retTS = TSProxy(retTask.id, retTask.destId, self.hostname, self.socAddr)
-        return (retTask, retTS)
+        return (retTask.id, retTask.destId, retTask.data, retTS.id, retTask.destid, retTask.data)
     
     def exposed_getAttr(self, taskId, attrName):
         if (attrName == 'qStatus'):
