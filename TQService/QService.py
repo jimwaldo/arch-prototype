@@ -97,7 +97,8 @@ class TestQueueService(rpyc.Service):
         
         
         '''
-        task = XTask(taskId, taskdest, taskdata)
+        task = XTask(taskdest, taskdata)
+        task.id = taskId
         retTS = TaskStatus(taskId, taskdest)
         self.queue.append(task)
         self.tStatus[task.id] = retTS
